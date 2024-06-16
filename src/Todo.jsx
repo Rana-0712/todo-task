@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import './Todo.css';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function Todo() {
-    let [todos, setTodos] = useState([{ task: "sample-task", id: uuidv4(), isDone: false }]);
+    let [todos, setTodos] = useState(() => {
+        const savedTodos = JSON.parse(localStorage.getItem("todos"));
+        return savedTodos || [{ task: "sample-task", id: uuidv4(), isDone: false }];
+    });
     let [newTodo, setNewTodo] = useState("");
     let [editId, setEditId] = useState(null);
     let [editedTask, setEditedTask] = useState("");
     let [error, setError] = useState("");
 
+    useEffect(() => {
+        localStorage.setItem("todos", JSON.stringify(todos));
+    }, [todos])
+    
     const getFormattedDate = () => {
         const date = new Date();
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -16,7 +23,7 @@ export default function Todo() {
         const dayName = dayNames[date.getDay()];
         const day = date.getDate();
         const month = monthNames[date.getMonth()];
-
+        
         return `${dayName}, ${day} ${month}`;
     };
 
@@ -32,7 +39,7 @@ export default function Todo() {
             setError("Input field can't be empty");
         }
     };
-
+    
     let updateTodo = (event) => {
         setNewTodo(event.target.value);
     };
@@ -40,7 +47,7 @@ export default function Todo() {
     let deleteTodos = (id) => {
         setTodos(todos.filter((todo) => todo.id !== id));
     };
-
+    
     let markAsDone = (id) => {
         setTodos(todos.map((todo) => {
             return todo.id === id ? { ...todo, isDone: !todo.isDone } : todo;
